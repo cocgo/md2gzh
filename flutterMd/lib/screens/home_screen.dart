@@ -20,6 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Article? _current;
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
+  bool _showSidebar = false;
 
   @override
   void initState() {
@@ -196,27 +197,32 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 768;
+    
     return Scaffold(
-      body: Container(
-        color: const Color(0xFFFFFFFF),
-        child: Row(
+      body: SafeArea(
+        child: Stack(
           children: [
-            SizedBox(
-              width: 220,
-              child: ArticleList(
-                articles: _articles,
-                selected: _current,
-                onSelect: _selectArticle,
-                onDelete: _deleteArticle,
-              ),
-            ),
-            Expanded(
+            Container(
+              color: const Color(0xFFFFFFFF),
               child: Column(
                 children: [
-                  _buildToolbar(),
+                  _buildToolbar(isMobile),
                   Expanded(
                     child: Row(
                       children: [
+                        if (!isMobile) ...[
+                          SizedBox(
+                            width: 160,
+                            child: ArticleList(
+                              articles: _articles,
+                              selected: _current,
+                              onSelect: _selectArticle,
+                              onDelete: _deleteArticle,
+                            ),
+                          ),
+                        ],
                         Expanded(child: _buildEditor()),
                         Container(
                           width: 0.5,
@@ -230,139 +236,180 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
+            if (isMobile && _showSidebar)
+              GestureDetector(
+                onTap: () => setState(() => _showSidebar = false),
+                child: Container(
+                  color: Colors.black54,
+                  width: double.infinity,
+                  height: double.infinity,
+                ),
+              ),
+            if (isMobile && _showSidebar)
+              Positioned(
+                left: 0,
+                top: 0,
+                bottom: 0,
+                width: 240,
+                child: ArticleList(
+                  articles: _articles,
+                  selected: _current,
+                  onSelect: (article) {
+                    _selectArticle(article);
+                    setState(() => _showSidebar = false);
+                  },
+                  onDelete: _deleteArticle,
+                ),
+              ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildToolbar() {
+  Widget _buildToolbar(bool isMobile) {
+    final buttonWidgets = [
+      CupertinoButton(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        onPressed: _newArticle,
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(CupertinoIcons.add, size: 18, color: Color(0xFF0071E3)),
+            SizedBox(width: 4),
+            Text(
+              '新建',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF0071E3),
+              ),
+            ),
+          ],
+        ),
+      ),
+      CupertinoButton(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        onPressed: _pasteFromClipboard,
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(CupertinoIcons.doc_on_clipboard, size: 18, color: Color(0xFF0071E3)),
+            SizedBox(width: 4),
+            Text(
+              '粘贴',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF0071E3),
+              ),
+            ),
+          ],
+        ),
+      ),
+      CupertinoButton(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        onPressed: _current != null ? _saveArticle : null,
+        child: Opacity(
+          opacity: _current != null ? 1.0 : 0.5,
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(CupertinoIcons.floppy_disk, size: 18, color: Color(0xFF0071E3)),
+              SizedBox(width: 4),
+              Text(
+                '保存',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF0071E3),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      CupertinoButton(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        onPressed: _controller.text.isNotEmpty ? _copyMarkdown : null,
+        child: Opacity(
+          opacity: _controller.text.isNotEmpty ? 1.0 : 0.5,
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(CupertinoIcons.doc_on_doc, size: 18, color: Color(0xFF86868B)),
+              SizedBox(width: 4),
+              Text(
+                '复制MD',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF86868B),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      CupertinoButton(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        onPressed: _controller.text.isNotEmpty ? _copyForWechat : null,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 9),
+          decoration: BoxDecoration(
+            color: _controller.text.isNotEmpty
+                ? const Color(0xFF0071E3)
+                : const Color(0xFFE5E5E7),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(CupertinoIcons.square_on_square, size: 16, color: Color(0xFFFFFFFF)),
+              SizedBox(width: 6),
+              Text(
+                '复制到公众号',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFFFFFFFF),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ];
+
     return Container(
-      height: 52,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       decoration: const BoxDecoration(
         color: Color(0xFFFFFFFF),
         border: Border(
           bottom: BorderSide(color: Color(0xFFE5E5E7), width: 0.5),
         ),
       ),
-      child: Row(
-        children: [
-          CupertinoButton(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            onPressed: _newArticle,
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
+      child: isMobile
+          ? Column(
               children: [
-                Icon(CupertinoIcons.add, size: 18, color: Color(0xFF0071E3)),
-                SizedBox(width: 4),
-                Text(
-                  '新建',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF0071E3),
-                  ),
+                Row(
+                  children: [
+                    CupertinoButton(
+                      padding: const EdgeInsets.all(8),
+                      onPressed: () => setState(() => _showSidebar = true),
+                      child: const Icon(CupertinoIcons.bars, size: 20, color: Color(0xFF0071E3)),
+                    ),
+                    ...buttonWidgets.take(3),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: buttonWidgets.skip(3).toList(),
                 ),
               ],
+            )
+          : Row(
+              children: buttonWidgets,
             ),
-          ),
-          const SizedBox(width: 8),
-          CupertinoButton(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            onPressed: _pasteFromClipboard,
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(CupertinoIcons.doc_on_clipboard, size: 18, color: Color(0xFF0071E3)),
-                SizedBox(width: 4),
-                Text(
-                  '粘贴',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF0071E3),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          CupertinoButton(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            onPressed: _current != null ? _saveArticle : null,
-            child: Opacity(
-              opacity: _current != null ? 1.0 : 0.5,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(CupertinoIcons.floppy_disk, size: 18, color: Color(0xFF0071E3)),
-                  const SizedBox(width: 4),
-                  const Text(
-                    '保存',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF0071E3),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const Spacer(),
-          CupertinoButton(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            onPressed: _controller.text.isNotEmpty ? _copyMarkdown : null,
-            child: Opacity(
-              opacity: _controller.text.isNotEmpty ? 1.0 : 0.5,
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(CupertinoIcons.doc_on_doc, size: 18, color: Color(0xFF86868B)),
-                  SizedBox(width: 4),
-                  Text(
-                    '复制MD',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF86868B),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          CupertinoButton(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            onPressed: _controller.text.isNotEmpty ? _copyForWechat : null,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 9),
-              decoration: BoxDecoration(
-                color: _controller.text.isNotEmpty
-                    ? const Color(0xFF0071E3)
-                    : const Color(0xFFE5E5E7),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(CupertinoIcons.square_on_square, size: 16, color: Color(0xFFFFFFFF)),
-                  SizedBox(width: 6),
-                  Text(
-                    '复制到公众号',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFFFFFFFF),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -541,7 +588,7 @@ class _HomeScreenState extends State<HomeScreen> {
               }
             },
             child: const Text(
-              'v1.0.0',
+              'v1.0.1',
               style: TextStyle(
                 fontSize: 12,
                 color: Color(0xFF0071E3),
