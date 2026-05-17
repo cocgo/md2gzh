@@ -1,10 +1,14 @@
+import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:path_provider/path_provider.dart';
 import '../models/article.dart';
 import '../services/article_service.dart';
+import '../services/wechat_format.dart';
+import '../screens/wechat_preview_screen.dart';
 import '../widgets/article_list.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -147,52 +151,11 @@ class _HomeScreenState extends State<HomeScreen> {
     final text = _controller.text;
     if (text.isEmpty) return;
     
-    final html = _convertToWechatHtml(text);
-    
-    Clipboard.setData(ClipboardData(text: html));
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('已复制，可直接粘贴到微信公众号'),
-        duration: Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
+    Navigator.of(context).push(
+      CupertinoPageRoute(
+        builder: (_) => WechatPreviewScreen(markdown: text),
       ),
     );
-  }
-
-  String _convertToWechatHtml(String markdown) {
-    final lines = markdown.split('\n');
-    final buffer = StringBuffer();
-    
-    for (var line in lines) {
-      line = line.trimRight();
-      
-      if (line.startsWith('# ')) {
-        buffer.write('<h1>${line.substring(2)}</h1>\n');
-      } else if (line.startsWith('## ')) {
-        buffer.write('<h2>${line.substring(3)}</h2>\n');
-      } else if (line.startsWith('### ')) {
-        buffer.write('<h3>${line.substring(4)}</h3>\n');
-      } else if (line.startsWith('> ')) {
-        buffer.write('<blockquote>${line.substring(2)}</blockquote>\n');
-      } else if (line.startsWith('- ') || line.startsWith('* ')) {
-        buffer.write('<p>• ${line.substring(2)}</p>\n');
-      } else if (line.trim().isNotEmpty) {
-        buffer.write('<p>${_processInlineStyles(line)}</p>\n');
-      } else {
-        buffer.write('<br/>\n');
-      }
-    }
-    
-    return buffer.toString();
-  }
-
-  String _processInlineStyles(String text) {
-    return text
-        .replaceAllMapped(RegExp(r'\*\*(.+?)\*\*'), (m) => '<strong>${m.group(1)}</strong>')
-        .replaceAllMapped(RegExp(r'\*(.+?)\*'), (m) => '<em>${m.group(1)}</em>')
-        .replaceAllMapped(RegExp(r'`(.+?)`'), (m) => '<code>${m.group(1)}</code>')
-        .replaceAllMapped(RegExp(r'\[(.+?)\]\((.+?)\)'), (m) => '<a href="${m.group(2)}">${m.group(1)}</a>');
   }
 
   @override
@@ -588,7 +551,7 @@ class _HomeScreenState extends State<HomeScreen> {
               }
             },
             child: const Text(
-              'v1.0.1',
+              'v1.0.2',
               style: TextStyle(
                 fontSize: 12,
                 color: Color(0xFF0071E3),
