@@ -128,6 +128,9 @@ class _HomeScreenState extends State<HomeScreen> {
       if (trimmed.startsWith('# ')) {
         return trimmed.substring(2).trim();
       }
+      if (trimmed.isNotEmpty) {
+        return trimmed.length > 30 ? '${trimmed.substring(0, 30)}...' : trimmed;
+      }
     }
     return '未命名文章';
   }

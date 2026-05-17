@@ -89,6 +89,15 @@ flutter run -d linux
 <p>这是一段<strong>粗体</strong>文字</p>
 ```
 
+# 打包发布
+## 安卓打包
+cd /Users/lzlc/Documents/appGit/md2gzh/flutterMd && flutter build apk --release 2>&1 | tail -5
+cp /Users/lzlc/Documents/appGit/md2gzh/flutterMd/build/app/outputs/flutter-apk/app-release.apk /Users/lzlc/Documents/appGit/md2gzh/flutterMd/release/markdown-editor-android.apk
+
+## macos打包发布
+cd /Users/lzlc/Documents/appGit/md2gzh/flutterMd && flutter build macos --release 2>&1 | tail -3
+cd /Users/lzlc/Documents/appGit/md2gzh/flutterMd/build/macos/Build/Products/Release && rm -f /Users/lzlc/Documents/appGit/md2gzh/flutterMd/release/markdown-editor-macos.zip && zip -r /Users/lzlc/Documents/appGit/md2gzh/flutterMd/release/markdown-editor-macos.zip "MD公众号.app" -q
+
 ## 📄 许可证
 
 MIT License
