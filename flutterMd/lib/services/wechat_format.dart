@@ -2,51 +2,65 @@ import 'package:markdown/markdown.dart' as md;
 
 class WechatFormat {
   static String convert(String markdown) {
+    // add space after closing ** when followed by CJK, helps parser recognize bold
+    var src = markdown.replaceAllMapped(
+      RegExp(r'\*\*(.+?)\*\*(?=[\u4e00-\u9fff\u3000-\u303f])'),
+      (m) => '**${m.group(1)}** ',
+    );
+
     final document = md.Document(
       extensionSet: md.ExtensionSet.gitHubWeb,
     );
-    final lines = markdown.split('\n');
-    final nodes = document.parseLines(lines);
+    final nodes = document.parse(src);
     final buffer = StringBuffer();
     final footnotes = <List<String>>[];
-    var footnoteIndex = 0;
 
     for (final node in nodes) {
-      buffer.write(_renderNode(node, null, footnotes, footnoteIndex));
+      buffer.write(_renderNode(node, null, footnotes));
     }
+
+    // post-process: fix any **...** that parser missed
+    var result = buffer.toString();
+    result = result.replaceAllMapped(
+      RegExp(r'\*\*(.+?)\*\*'),
+      (m) => '<strong style="font-weight:bold;">${m.group(1)}</strong>',
+    );
+    result = result.replaceAllMapped(
+      RegExp(r'\*(.+?)\*'),
+      (m) => '<em style="font-style:italic;">${m.group(1)}</em>',
+    );
 
     if (footnotes.isNotEmpty) {
-      buffer.write('<h3 style="font-weight:bold;font-size:120%;margin:40px 10px 20px 10px;">References</h3>');
-      buffer.write('<p style="margin:10px 10px;font-size:14px;">');
-      for (var i = 0; i < footnotes.length; i++) {
-        final f = footnotes[i];
-        buffer.write('<code style="font-size:90%;opacity:0.6;">[${f[0]}]</code> ${f[1]}: <i>${f[2]}</i><br/>');
+      result += '<h3 style="font-weight:bold;font-size:120%;margin:40px 10px 20px 10px;">References</h3>';
+      result += '<p style="margin:10px 10px;font-size:14px;">';
+      for (final f in footnotes) {
+        result += '<code style="font-size:90%;opacity:0.6;">[${f[0]}]</code> ${f[1]}: <i>${f[2]}</i><br/>';
       }
-      buffer.write('</p>');
+      result += '</p>';
     }
 
-    return buffer.toString();
+    return result;
   }
 
-  static int _addFootnote(List<List<String>> footnotes, String title, String link, int index) {
-    final newIndex = index + 1;
+  static int _addFootnote(List<List<String>> footnotes, String title, String link) {
+    final newIndex = footnotes.length + 1;
     footnotes.add([newIndex.toString(), title, link]);
     return newIndex;
   }
 
-  static String _renderNode(md.Node node, String? parentTag, List<List<String>> footnotes, int footnoteIndex) {
+  static String _renderNode(md.Node node, String? parentTag, List<List<String>> footnotes) {
     if (node is md.Element) {
-      return _renderElement(node, parentTag, footnotes, footnoteIndex);
+      return _renderElement(node, parentTag, footnotes);
     } else if (node is md.Text) {
       return _escapeHtml(node.textContent);
     }
     return _escapeHtml(node.textContent);
   }
 
-  static String _renderElement(md.Element element, String? parentTag, List<List<String>> footnotes, int footnoteIndex) {
+  static String _renderElement(md.Element element, String? parentTag, List<List<String>> footnotes) {
     final tag = element.tag;
     final children = (element.children ?? [])
-        .map((n) => _renderNode(n, tag, footnotes, footnoteIndex))
+        .map((n) => _renderNode(n, tag, footnotes))
         .join('');
 
     switch (tag) {
@@ -83,7 +97,7 @@ class WechatFormat {
           return '<a href="$href" style="color:#576b95;text-decoration:none;">$text</a>';
         }
         if (href == text) return text;
-        final ref = _addFootnote(footnotes, text, href, footnotes.length);
+        final ref = _addFootnote(footnotes, text, href);
         return '<span style="color:#ff3502;">$text<sup>[$ref]</sup></span>';
       case 'img':
         final src = element.attributes['src'] ?? '';
@@ -95,7 +109,7 @@ class WechatFormat {
         return '<p style="margin-left:0;padding-left:20px;margin:10px 10px;font-size:16px;color:#3f3f3f;line-height:1.6;">$children</p>';
       case 'li':
         if (parentTag == 'ul') {
-          return '<span style="text-indent:-20px;display:block;margin:10px 10px;font-size:16px;color:#3f3f3f;line-height:1.6;"><span style="margin-right:10px;">•</span>$children</span>';
+          return '<span style="text-indent:-20px;display:block;margin:10px 10px;font-size:16px;color:#3f3f3f;line-height:1.6;"><span style="margin-right:10px;">&#8226;</span>$children</span>';
         }
         return '<span style="text-indent:-20px;display:block;margin:10px 10px;font-size:16px;color:#3f3f3f;line-height:1.6;">$children</span>';
       case 'hr':

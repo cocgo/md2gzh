@@ -102,10 +102,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _saveArticle() async {
     if (_current == null) return;
-    final title = _extractTitle(_controller.text);
+    var content = _controller.text;
+    content = _fixBoldSyntax(content);
+    if (content != _controller.text) {
+      _controller.text = content;
+    }
+    final title = _extractTitle(content);
     final article = _current!.copyWith(
       title: title,
-      content: _controller.text,
+      content: content,
     );
     await _service.save(article);
     _current = article;
@@ -119,6 +124,12 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
     }
+  }
+
+  String _fixBoldSyntax(String text) {
+    return text
+        .replaceAllMapped(RegExp(r'\*\*(.+?)\*\*(?=[\u4e00-\u9fff])'), (m) => '**${m.group(1)}** ')
+        .replaceAllMapped(RegExp(r'\*(.+?)\*(?=[\u4e00-\u9fff])'), (m) => '*${m.group(1)}* ');
   }
 
   String _extractTitle(String content) {
