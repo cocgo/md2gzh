@@ -22,6 +22,7 @@ const downloadedTasks = new Set();
 app.post('/api/generate', async (req, res) => {
     try {
         const { apiKey, body } = req.body;
+        console.log(`[${new Date().toLocaleString()}] 开始生成请求，提示词: ${body.input?.prompt?.substring(0, 50)}...`);
 
         const response = await axios({
             method: 'POST',
@@ -33,8 +34,10 @@ app.post('/api/generate', async (req, res) => {
             data: body
         });
 
+        console.log(`[${new Date().toLocaleString()}] 任务已提交，task_id: ${response.data.task_id}`);
         res.json(response.data);
     } catch (err) {
+        console.log(`[${new Date().toLocaleString()}] 请求失败: ${err.message}`);
         res.status(500).json({
             code: 500,
             msg: err.message
@@ -59,11 +62,15 @@ app.post('/api/task', async (req, res) => {
         if (data.status === 'success' && data.data?.[0]?.url && !downloadedTasks.has(taskId)) {
             downloadedTasks.add(taskId);
             const imgUrl = data.data[0].url;
+            console.log(`[${new Date().toLocaleString()}] 任务完成，task_id: ${taskId}，图片地址: ${imgUrl}`);
             await downloadImage(imgUrl, DOWNLOAD_DIR);
+        } else if (data.status === 'success') {
+            console.log(`[${new Date().toLocaleString()}] 任务已完成（已下载过），task_id: ${taskId}`);
         }
 
         res.json(data);
     } catch (err) {
+        console.log(`[${new Date().toLocaleString()}] 查询任务失败: ${err.message}`);
         res.status(500).json({ status: 'error' });
     }
 });
@@ -85,10 +92,13 @@ async function downloadImage(url, dir) {
         res.data.pipe(writer);
 
         return new Promise((resolve) => {
-            writer.on('finish', resolve);
+            writer.on('finish', () => {
+                console.log(`[${new Date().toLocaleString()}] 图片已下载: ${filename}`);
+                resolve();
+            });
         });
     } catch (e) {
-        console.log('下载失败', e);
+        console.log(`[${new Date().toLocaleString()}] 下载失败:`, e.message);
     }
 }
 
