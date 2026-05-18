@@ -109,6 +109,16 @@
                 <input type="hidden" id="outputFormat" value="png">
             </div>
 
+            <div class="mb-5">
+                <label class="block mb-2 text-sm">背景</label>
+                <div class="flex gap-2">
+                    <button class="btn-option bg-btn active" data-val="auto">自动</button>
+                    <button class="btn-option bg-btn" data-val="opaque">不透明</button>
+                    <button class="btn-option bg-btn" data-val="transparent">透明</button>
+                </div>
+                <input type="hidden" id="background" value="auto">
+            </div>
+
             <div class="mb-6 p-4 bg-gray-50 rounded-xl">
                 <div class="flex items-center gap-2 mb-2">
                     <input type="checkbox" id="useCustomSize">
@@ -188,6 +198,7 @@ function loadHistory(idx){
     document.getElementById('aspectRatio').value = cfg.aspectRatio;
     document.getElementById('quality').value = cfg.quality;
     document.getElementById('outputFormat').value = cfg.outputFormat;
+    if(cfg.background) document.getElementById('background').value = cfg.background;
     document.getElementById('useCustomSize').checked = cfg.useCustomSize;
     document.getElementById('width').value = cfg.width;
     document.getElementById('height').value = cfg.height;
@@ -232,7 +243,7 @@ document.getElementById('toggleApiKey').onclick = function(){
 
 const FIELDS = [
     'apiKey','prompt','imageUrls','resolution','aspectRatio',
-    'size','quality','outputFormat','useCustomSize','width','height'
+    'size','quality','outputFormat','background','useCustomSize','width','height'
 ];
 
 // 自动保存
@@ -246,6 +257,7 @@ bindGroup('res-btn','resolution');
 bindGroup('ratio-btn','aspectRatio');
 bindGroup('quality-btn','quality');
 bindGroup('fmt-btn','outputFormat');
+bindGroup('bg-btn','background');
 
 function bindGroup(cls, targetId){
     document.querySelectorAll('.'+cls).forEach(btn => {
@@ -312,12 +324,13 @@ function loadAll(){
 }
 
 function updateButtonStyles(){
-    ['res-btn','ratio-btn','quality-btn','fmt-btn'].forEach(cls => {
+    ['res-btn','ratio-btn','quality-btn','fmt-btn','bg-btn'].forEach(cls => {
         const btns = document.querySelectorAll('.'+cls);
         btns.forEach(btn => {
             const targetId = cls === 'res-btn' ? 'resolution' :
                             cls === 'ratio-btn' ? 'aspectRatio' :
-                            cls === 'quality-btn' ? 'quality' : 'outputFormat';
+                            cls === 'quality-btn' ? 'quality' :
+                            cls === 'bg-btn' ? 'background' : 'outputFormat';
             const val = document.getElementById(targetId).value;
             if(btn.dataset.val === val) btn.classList.add('active');
             else btn.classList.remove('active');
@@ -343,6 +356,7 @@ document.getElementById('submitBtn').onclick = async () => {
             prompt,
             quality: document.getElementById('quality').value,
             output_format: document.getElementById('outputFormat').value,
+            background: document.getElementById('background').value,
         }
     };
 
@@ -407,6 +421,7 @@ function startPoll(key){
                 aspectRatio: document.getElementById('aspectRatio').value,
                 quality: document.getElementById('quality').value,
                 outputFormat: document.getElementById('outputFormat').value,
+                background: document.getElementById('background').value,
                 useCustomSize: document.getElementById('useCustomSize').checked,
                 width: document.getElementById('width').value,
                 height: document.getElementById('height').value
