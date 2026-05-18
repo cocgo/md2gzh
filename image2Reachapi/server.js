@@ -15,6 +15,9 @@ if (!fs.existsSync(DOWNLOAD_DIR)) {
     fs.mkdirSync(DOWNLOAD_DIR);
 }
 
+// 已下载的任务ID（防止重复下载）
+const downloadedTasks = new Set();
+
 // 生成图片（代理 API，解决跨域）
 app.post('/api/generate', async (req, res) => {
     try {
@@ -53,7 +56,8 @@ app.post('/api/task', async (req, res) => {
 
         // 如果生成成功，自动下载图片
         const data = response.data;
-        if (data.status === 'success' && data.data?.[0]?.url) {
+        if (data.status === 'success' && data.data?.[0]?.url && !downloadedTasks.has(taskId)) {
+            downloadedTasks.add(taskId);
             const imgUrl = data.data[0].url;
             await downloadImage(imgUrl, DOWNLOAD_DIR);
         }
