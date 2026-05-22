@@ -64,12 +64,12 @@ class WechatFormat {
     switch (tag) {
       case 'h1':
       case 'h2':
-        return '<h2 style="font-size:${_fs(22)}px;text-align:center;font-weight:normal;margin:80px 10px 40px 10px;color:#3f3f3f;line-height:1.5;">$children</h2>';
+        return '<h2 style="font-size:${_fs(22)}px;text-align:center;font-weight:normal;margin:30px 10px 15px 10px;color:#3f3f3f;line-height:1.5;">$children</h2>';
       case 'h3':
       case 'h4':
       case 'h5':
       case 'h6':
-        return '<h3 style="font-weight:bold;font-size:${_fs(18)}px;margin:40px 10px 20px 10px;color:#3f3f3f;line-height:1.5;">$children</h3>';
+        return '<h3 style="font-weight:bold;font-size:${_fs(18)}px;margin:20px 10px 10px 10px;color:#3f3f3f;line-height:1.5;">$children</h3>';
       case 'p':
         if (parentTag == 'blockquote') {
           return '<p style="margin:0;font-size:${_fs(16)}px;color:rgb(91,91,91);line-height:1.6;">$children</p>';
