@@ -173,13 +173,19 @@ function saveHistory(prompt, imgUrl, config){
     return item;
 }
 
+function escHtml(s){
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+}
+
 function renderHistory(){
     const history = JSON.parse(localStorage.getItem('img_history') || '[]');
     const list = document.getElementById('historyList');
     list.innerHTML = history.map((item, i) => `
         <div class="history-item p-2 rounded-lg hover:bg-gray-100 cursor-pointer border" data-idx="${i}">
-            <div class="text-xs text-gray-400">${item.time}</div>
-            <div class="text-sm truncate">${item.prompt}</div>
+            <div class="text-xs text-gray-400">${escHtml(item.time)}</div>
+            <div class="text-sm truncate">${escHtml(item.prompt)}</div>
             <img src="${item.imgUrl}" class="w-full h-20 object-cover rounded mt-1">
         </div>
     `).join('');
