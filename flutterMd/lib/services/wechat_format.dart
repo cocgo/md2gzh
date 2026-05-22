@@ -19,16 +19,8 @@ class WechatFormat {
       buffer.write(_renderNode(node, null, footnotes));
     }
 
-    // post-process: fix any **...** that parser missed
+    // post-process
     var result = buffer.toString();
-    result = result.replaceAllMapped(
-      RegExp(r'\*\*(.+?)\*\*'),
-      (m) => '<strong style="font-weight:bold;">${m.group(1)}</strong>',
-    );
-    result = result.replaceAllMapped(
-      RegExp(r'\*(.+?)\*'),
-      (m) => '<em style="font-style:italic;">${m.group(1)}</em>',
-    );
 
     if (footnotes.isNotEmpty) {
       result += '<h3 style="font-weight:bold;font-size:120%;margin:40px 10px 20px 10px;">References</h3>';
@@ -51,10 +43,8 @@ class WechatFormat {
   static String _renderNode(md.Node node, String? parentTag, List<List<String>> footnotes) {
     if (node is md.Element) {
       return _renderElement(node, parentTag, footnotes);
-    } else if (node is md.Text) {
-      return _escapeHtml(node.textContent);
     }
-    return _escapeHtml(node.textContent);
+    return node.textContent;
   }
 
   static String _renderElement(md.Element element, String? parentTag, List<List<String>> footnotes) {
@@ -153,13 +143,5 @@ class WechatFormat {
     return '<section class="code-snippet__fix code-snippet__js">'
         '<ul class="code-snippet__line-index code-snippet__js">${numbers.join('')}</ul>'
         '<pre class="code-snippet__js">${codeLines.join('')}</pre></section>';
-  }
-
-  static String _escapeHtml(String text) {
-    return text
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;');
   }
 }
