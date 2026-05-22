@@ -15,10 +15,20 @@ class WechatPreviewScreen extends StatefulWidget {
 class _WechatPreviewScreenState extends State<WechatPreviewScreen> {
   late final WebViewController _controller;
   bool _loaded = false;
+  bool _largeFont = false;
+
+  void _reload() {
+    setState(() => _loaded = false);
+    WechatFormat.largeFont = _largeFont;
+    final htmlFragment = WechatFormat.convert(widget.markdown);
+    final fullHtml = _buildHtml(htmlFragment);
+    _controller.loadHtmlString(fullHtml);
+  }
 
   @override
   void initState() {
     super.initState();
+    WechatFormat.largeFont = _largeFont;
     final htmlFragment = WechatFormat.convert(widget.markdown);
     final fullHtml = _buildHtml(htmlFragment);
 
@@ -44,6 +54,8 @@ class _WechatPreviewScreenState extends State<WechatPreviewScreen> {
   }
 
   String _buildHtml(String content) {
+    final bodyFs = _largeFont ? 18 : 17;
+    final codeFs = _largeFont ? 16 : 15;
     return '''<!DOCTYPE html>
 <html>
 <head>
@@ -53,7 +65,7 @@ class _WechatPreviewScreenState extends State<WechatPreviewScreen> {
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-  font-size: 18px;
+  font-size: ${bodyFs}px;
   padding: 20px;
   padding-bottom: 80px;
   -webkit-user-select: text;
@@ -79,7 +91,7 @@ body {
 #btn-copy.done { background: #52c41a; }
 .code-snippet__fix {
   word-wrap: break-word !important;
-  font-size: 16px; margin: 10px 0; display: flex;
+  font-size: ${codeFs}px; margin: 10px 0; display: flex;
   color: #333; position: relative;
   background-color: rgba(0,0,0,0.03);
   border: 1px solid #f0f0f0; border-radius: 2px;
@@ -102,7 +114,7 @@ body {
   white-space: normal; flex: 1; -webkit-overflow-scrolling: touch;
 }
 .code-snippet__fix code {
-  text-align: left; font-size: 16px; display: block;
+  text-align: left; font-size: ${codeFs}px; display: block;
   white-space: pre; display: flex; position: relative;
   font-family: Consolas,"Liberation Mono",Menlo,Courier,monospace;
 }
@@ -153,6 +165,18 @@ function doCopy() {
           padding: EdgeInsets.zero,
           onPressed: () => Navigator.pop(context),
           child: const Icon(CupertinoIcons.back, color: Color(0xFF0071E3)),
+        ),
+        trailing: CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: () {
+            _largeFont = !_largeFont;
+            _reload();
+          },
+          child: Icon(
+            _largeFont ? CupertinoIcons.text_bubble : CupertinoIcons.text_bubble_fill,
+            color: const Color(0xFF0071E3),
+            size: 22,
+          ),
         ),
       ),
       body: Stack(
