@@ -24,9 +24,9 @@ class WechatFormat {
 
     if (footnotes.isNotEmpty) {
       result += '<h3 style="font-weight:bold;font-size:120%;margin:40px 10px 20px 10px;">References</h3>';
-      result += '<p style="margin:10px 10px;font-size:14px;">';
+      result += '<p style="margin:10px 10px;font-size:16px;">';
       for (final f in footnotes) {
-        result += '<code style="font-size:90%;opacity:0.6;">[${f[0]}]</code> ${f[1]}: <i>${f[2]}</i><br/>';
+        result += '<code style="opacity:0.6;">[${f[0]}]</code> ${f[1]}: <i>${f[2]}</i><br/>';
       }
       result += '</p>';
     }
@@ -44,7 +44,11 @@ class WechatFormat {
     if (node is md.Element) {
       return _renderElement(node, parentTag, footnotes);
     }
-    return node.textContent;
+    return _escapeHtml(node.textContent);
+  }
+
+  static String _escapeHtml(String text) {
+    return text;
   }
 
   static String _renderElement(md.Element element, String? parentTag, List<List<String>> footnotes) {
@@ -56,17 +60,17 @@ class WechatFormat {
     switch (tag) {
       case 'h1':
       case 'h2':
-        return '<h2 style="font-size:140%;text-align:center;font-weight:normal;margin:80px 10px 40px 10px;color:#3f3f3f;line-height:1.5;">$children</h2>';
+        return '<h2 style="font-size:24px;text-align:center;font-weight:normal;margin:80px 10px 40px 10px;color:#3f3f3f;line-height:1.5;">$children</h2>';
       case 'h3':
       case 'h4':
       case 'h5':
       case 'h6':
-        return '<h3 style="font-weight:bold;font-size:120%;margin:40px 10px 20px 10px;color:#3f3f3f;line-height:1.5;">$children</h3>';
+        return '<h3 style="font-weight:bold;font-size:19px;margin:40px 10px 20px 10px;color:#3f3f3f;line-height:1.5;">$children</h3>';
       case 'p':
         if (parentTag == 'blockquote') {
-          return '<p style="margin:0;font-size:15px;color:rgb(91,91,91);line-height:1.6;">$children</p>';
+          return '<p style="margin:0;font-size:17px;color:rgb(91,91,91);line-height:1.6;">$children</p>';
         }
-        return '<p style="margin:10px 10px;font-size:16px;color:#3f3f3f;line-height:1.6;">$children</p>';
+        return '<p style="margin:10px 10px;font-size:18px;color:#3f3f3f;line-height:1.6;">$children</p>';
       case 'blockquote':
         return '<blockquote style="color:rgb(91,91,91);padding:1px 0 1px 10px;background:rgba(158,158,158,0.1);border-left:3px solid rgb(158,158,158);">$children</blockquote>';
       case 'pre':
@@ -75,7 +79,7 @@ class WechatFormat {
         if (parentTag == 'pre') {
           return children;
         }
-        return '<code style="font-size:90%;font-family:Consolas,Monaco,Menlo,monospace;color:#ff3502;background:#f8f5ec;padding:3px 5px;border-radius:2px;">$children</code>';
+        return '<code style="font-family:Consolas,Monaco,Menlo,monospace;color:#ff3502;background:#f8f5ec;padding:3px 5px;border-radius:2px;">$children</code>';
       case 'strong':
         return '<strong style="font-weight:bold;">$children</strong>';
       case 'em':
@@ -94,18 +98,18 @@ class WechatFormat {
         final alt = element.attributes['alt'] ?? '';
         return '<img style="border-radius:4px;display:block;margin:20px auto;width:100%;" src="$src" alt="$alt"/>';
       case 'ul':
-        return '<p style="margin-left:0;padding-left:20px;list-style:circle;margin:10px 10px;font-size:16px;color:#3f3f3f;line-height:1.6;">$children</p>';
+        return '<p style="margin-left:0;padding-left:20px;list-style:circle;margin:10px 10px;font-size:18px;color:#3f3f3f;line-height:1.6;">$children</p>';
       case 'ol':
-        return '<p style="margin-left:0;padding-left:20px;margin:10px 10px;font-size:16px;color:#3f3f3f;line-height:1.6;">$children</p>';
+        return '<p style="margin-left:0;padding-left:20px;margin:10px 10px;font-size:18px;color:#3f3f3f;line-height:1.6;">$children</p>';
       case 'li':
         if (parentTag == 'ul') {
-          return '<span style="text-indent:-20px;display:block;margin:10px 10px;font-size:16px;color:#3f3f3f;line-height:1.6;"><span style="margin-right:10px;">&#8226;</span>$children</span>';
+          return '<span style="text-indent:-20px;display:block;margin:10px 10px;font-size:18px;color:#3f3f3f;line-height:1.6;"><span style="margin-right:10px;">&#8226;</span>$children</span>';
         }
-        return '<span style="text-indent:-20px;display:block;margin:10px 10px;font-size:16px;color:#3f3f3f;line-height:1.6;">$children</span>';
+        return '<span style="text-indent:-20px;display:block;margin:10px 10px;font-size:18px;color:#3f3f3f;line-height:1.6;">$children</span>';
       case 'hr':
         return '<hr style="border-style:solid;border-width:1px 0 0;border-color:rgba(0,0,0,0.1);-webkit-transform-origin:0 0;-webkit-transform:scale(1,0.5);transform-origin:0 0;transform:scale(1,0.5);">';
       case 'table':
-        return '<table style="border-collapse:collapse;margin:20px 0;font-size:16px;color:#3f3f3f;">$children</table>';
+        return '<table style="border-collapse:collapse;margin:20px 0;font-size:18px;color:#3f3f3f;">$children</table>';
       case 'thead':
         return '<thead style="background:rgba(0,0,0,0.05);">$children</thead>';
       case 'tbody':

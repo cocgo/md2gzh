@@ -52,7 +52,8 @@ class _WechatPreviewScreenState extends State<WechatPreviewScreen> {
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-  font-family: 'PingFang SC', BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  font-size: 18px;
   padding: 20px;
   padding-bottom: 80px;
   -webkit-user-select: text;
@@ -78,7 +79,7 @@ body {
 #btn-copy.done { background: #52c41a; }
 .code-snippet__fix {
   word-wrap: break-word !important;
-  font-size: 14px; margin: 10px 0; display: flex;
+  font-size: 16px; margin: 10px 0; display: flex;
   color: #333; position: relative;
   background-color: rgba(0,0,0,0.03);
   border: 1px solid #f0f0f0; border-radius: 2px;
@@ -101,7 +102,7 @@ body {
   white-space: normal; flex: 1; -webkit-overflow-scrolling: touch;
 }
 .code-snippet__fix code {
-  text-align: left; font-size: 14px; display: block;
+  text-align: left; font-size: 16px; display: block;
   white-space: pre; display: flex; position: relative;
   font-family: Consolas,"Liberation Mono",Menlo,Courier,monospace;
 }
