@@ -55,7 +55,7 @@ class WechatFormat {
     return text;
   }
 
-  static String _renderElement(md.Element element, String? parentTag, List<List<String>> footnotes) {
+  static String _renderElement(md.Element element, String? parentTag, List<List<String>> footnotes, {int listIndex = 0}) {
     final tag = element.tag;
     final children = (element.children ?? [])
         .map((n) => _renderNode(n, tag, footnotes))
@@ -102,14 +102,32 @@ class WechatFormat {
         final alt = element.attributes['alt'] ?? '';
         return '<img style="border-radius:4px;display:block;margin:20px auto;width:100%;" src="$src" alt="$alt"/>';
       case 'ul':
-        return '<p style="margin-left:0;padding-left:20px;list-style:circle;margin:10px 10px;font-size:${_fs(17)}px;color:#3f3f3f;line-height:1.6;">$children</p>';
-      case 'ol':
-        return '<p style="margin-left:0;padding-left:20px;margin:10px 10px;font-size:${_fs(17)}px;color:#3f3f3f;line-height:1.6;">$children</p>';
-      case 'li':
-        if (parentTag == 'ul') {
-          return '<span style="text-indent:-20px;display:block;margin:10px 10px;font-size:${_fs(17)}px;color:#3f3f3f;line-height:1.6;"><span style="margin-right:10px;">&#8226;</span>$children</span>';
+        final ulChildren = (element.children ?? []).toList();
+        final ulHtml = StringBuffer();
+        for (final child in ulChildren) {
+          if (child is md.Element && child.tag == 'li') {
+            final liText = (child.children ?? []).map((n) => _renderNode(n, 'li', footnotes)).join('');
+            ulHtml.write('<p style="margin:5px 0;font-size:${_fs(17)}px;color:#3f3f3f;line-height:1.6;">&#8226; $liText</p>');
+          } else {
+            ulHtml.write(_renderNode(child, tag, footnotes));
+          }
         }
-        return '<span style="text-indent:-20px;display:block;margin:10px 10px;font-size:${_fs(17)}px;color:#3f3f3f;line-height:1.6;">$children</span>';
+        return '<div style="margin:10px 10px;padding-left:20px;font-size:${_fs(17)}px;color:#3f3f3f;line-height:1.6;">$ulHtml</div>';
+      case 'ol':
+        final olChildren = (element.children ?? []).toList();
+        final olHtml = StringBuffer();
+        for (var i = 0; i < olChildren.length; i++) {
+          final child = olChildren[i];
+          if (child is md.Element && child.tag == 'li') {
+            final liText = (child.children ?? []).map((n) => _renderNode(n, 'li', footnotes)).join('');
+            olHtml.write('<p style="margin:5px 0;font-size:${_fs(17)}px;color:#3f3f3f;line-height:1.6;">${i + 1}. $liText</p>');
+          } else {
+            olHtml.write(_renderNode(child, tag, footnotes));
+          }
+        }
+        return '<div style="margin:10px 10px;padding-left:20px;font-size:${_fs(17)}px;color:#3f3f3f;line-height:1.6;">$olHtml</div>';
+      case 'li':
+        return '<p style="margin:5px 0;font-size:${_fs(17)}px;color:#3f3f3f;line-height:1.6;">$children</p>';
       case 'hr':
         return '<hr style="border-style:solid;border-width:1px 0 0;border-color:rgba(0,0,0,0.1);-webkit-transform-origin:0 0;-webkit-transform:scale(1,0.5);transform-origin:0 0;transform:scale(1,0.5);">';
       case 'table':

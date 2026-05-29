@@ -565,7 +565,7 @@ class _HomeScreenState extends State<HomeScreen> {
               }
             },
             child: const Text(
-              'v1.0.4',
+              'v1.0.5',
               style: TextStyle(
                 fontSize: 12,
                 color: Color(0xFF0071E3),

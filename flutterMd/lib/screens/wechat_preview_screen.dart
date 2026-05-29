@@ -166,17 +166,32 @@ function doCopy() {
           onPressed: () => Navigator.pop(context),
           child: const Icon(CupertinoIcons.back, color: Color(0xFF0071E3)),
         ),
-        trailing: CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: () {
-            _largeFont = !_largeFont;
-            _reload();
-          },
-          child: Icon(
-            _largeFont ? CupertinoIcons.text_bubble : CupertinoIcons.text_bubble_fill,
-            color: const Color(0xFF0071E3),
-            size: 22,
-          ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CupertinoButton(
+              padding: EdgeInsets.zero,
+              onPressed: () {
+                _controller.runJavaScript(
+                  "var el=document.getElementById('output');"
+                  "el.innerHTML=el.innerHTML.replace(/\\*\\*/g,'');"
+                );
+              },
+              child: const Icon(CupertinoIcons.xmark_circle, color: Color(0xFF0071E3), size: 22),
+            ),
+            CupertinoButton(
+              padding: EdgeInsets.zero,
+              onPressed: () {
+                _largeFont = !_largeFont;
+                _reload();
+              },
+              child: Icon(
+                _largeFont ? CupertinoIcons.text_bubble : CupertinoIcons.text_bubble_fill,
+                color: const Color(0xFF0071E3),
+                size: 22,
+              ),
+            ),
+          ],
         ),
       ),
       body: Stack(
