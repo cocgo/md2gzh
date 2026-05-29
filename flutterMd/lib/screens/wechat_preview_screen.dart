@@ -63,6 +63,7 @@ class _WechatPreviewScreenState extends State<WechatPreviewScreen> {
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
+p, div, h1, h2, h3, h4, h5, h6 { display: block; word-break: break-word; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
   font-size: ${bodyFs}px;

@@ -26,6 +26,12 @@ class WechatFormat {
     // post-process
     var result = buffer.toString();
 
+    // ensure numbered items like 1） 2） 3） or 1. 2. 3. inside paragraphs get line breaks
+    result = result.replaceAllMapped(
+      RegExp(r'([^\n>])\s+(\d+[）\.)]\s)'),
+      (m) => '${m.group(1)}<br>${m.group(2)}',
+    );
+
     if (footnotes.isNotEmpty) {
       result += '<h3 style="font-weight:bold;font-size:${_fs(18)}px;margin:40px 10px 20px 10px;">References</h3>';
       result += '<p style="margin:10px 10px;font-size:${_fs(15)}px;">';
@@ -72,9 +78,9 @@ class WechatFormat {
         return '<h3 style="font-weight:bold;font-size:${_fs(18)}px;margin:20px 10px 10px 10px;color:#3f3f3f;line-height:1.5;">$children</h3>';
       case 'p':
         if (parentTag == 'blockquote') {
-          return '<p style="margin:0;font-size:${_fs(16)}px;color:rgb(91,91,91);line-height:1.6;">$children</p>';
+          return '<p style="display:block;margin:0;font-size:${_fs(16)}px;color:rgb(91,91,91);line-height:1.6;word-break:break-word;">$children</p>';
         }
-        return '<p style="margin:10px 10px;font-size:${_fs(17)}px;color:#3f3f3f;line-height:1.6;">$children</p>';
+        return '<p style="display:block;margin:10px 10px;font-size:${_fs(17)}px;color:#3f3f3f;line-height:1.6;word-break:break-word;">$children</p>';
       case 'blockquote':
         return '<blockquote style="color:rgb(91,91,91);padding:1px 0 1px 10px;background:rgba(158,158,158,0.1);border-left:3px solid rgb(158,158,158);">$children</blockquote>';
       case 'pre':
@@ -107,7 +113,7 @@ class WechatFormat {
         for (final child in ulChildren) {
           if (child is md.Element && child.tag == 'li') {
             final liText = (child.children ?? []).map((n) => _renderNode(n, 'li', footnotes)).join('');
-            ulHtml.write('<p style="margin:5px 0;font-size:${_fs(17)}px;color:#3f3f3f;line-height:1.6;">&#8226; $liText</p>');
+            ulHtml.write('<p style="display:block;margin:5px 0;font-size:${_fs(17)}px;color:#3f3f3f;line-height:1.6;word-break:break-word;">&#8226; $liText</p>');
           } else {
             ulHtml.write(_renderNode(child, tag, footnotes));
           }
@@ -120,14 +126,14 @@ class WechatFormat {
           final child = olChildren[i];
           if (child is md.Element && child.tag == 'li') {
             final liText = (child.children ?? []).map((n) => _renderNode(n, 'li', footnotes)).join('');
-            olHtml.write('<p style="margin:5px 0;font-size:${_fs(17)}px;color:#3f3f3f;line-height:1.6;">${i + 1}. $liText</p>');
+            olHtml.write('<p style="display:block;margin:5px 0;font-size:${_fs(17)}px;color:#3f3f3f;line-height:1.6;word-break:break-word;">${i + 1}. $liText</p>');
           } else {
             olHtml.write(_renderNode(child, tag, footnotes));
           }
         }
         return '<div style="margin:10px 10px;padding-left:20px;font-size:${_fs(17)}px;color:#3f3f3f;line-height:1.6;">$olHtml</div>';
       case 'li':
-        return '<p style="margin:5px 0;font-size:${_fs(17)}px;color:#3f3f3f;line-height:1.6;">$children</p>';
+        return '<p style="display:block;margin:5px 0;font-size:${_fs(17)}px;color:#3f3f3f;line-height:1.6;word-break:break-word;">$children</p>';
       case 'hr':
         return '<hr style="border-style:solid;border-width:1px 0 0;border-color:rgba(0,0,0,0.1);-webkit-transform-origin:0 0;-webkit-transform:scale(1,0.5);transform-origin:0 0;transform:scale(1,0.5);">';
       case 'table':
